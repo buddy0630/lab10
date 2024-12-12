@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="mn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Мэдээний сайт</title>
+</head>
+<body>
+    <h1>Мэдээний жагсаалт</h1>
+    <div id="news-list">Мэдээнүүд ачааллаж байна...</div>
+
+    <script>
+        // RSS өгөгдөл авах
+        const xhr = new XMLHttpRequest();
+        xhr.open("GET", "https://cors-anywhere.herokuapp.com/https://ikon.mn/rss.xml", true);
+        xhr.onload = function () {
+            if (xhr.status === 200) {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xhr.responseText, "text/xml");
+                const items = xmlDoc.getElementsByTagName("item");
+
+                if (items.length > 0) {
+                    const newsList = document.getElementById("news-list");
+                    newsList.innerHTML = "";
+
+                    Array.from(items).forEach(item => {
+                        const title = item.getElementsByTagName("title")[0]?.textContent || "Гарчиг байхгүй";
+                        const link = item.getElementsByTagName("link")[0]?.textContent || "#";
+
+                        const newsItem = document.createElement("div");
+                        newsItem.innerHTML = <a href="${link}" target="_blank">${title}</a>; // Fixed template literal syntax
+                        newsList.appendChild(newsItem);
+                    });
+                } else {
+                    document.getElementById("news-list").textContent = "Мэдээлэл олдсонгүй!";
+                }
+            } else {
+                console.error("RSS татахад алдаа гарлаа.");
+                document.getElementById("news-list").textContent = "Мэдээ ачаалахад алдаа гарлаа.";
+            }
+        };
+        xhr.onerror = function () {
+            console.error("Хүсэлт илгээхэд алдаа гарлаа.");
+            document.getElementById("news-list").textContent = "Сүлжээний алдаа гарлаа.";
+        };
+        xhr.send();
+    </script>
+</body>
+</html>
